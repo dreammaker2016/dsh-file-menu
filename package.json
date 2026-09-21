@@ -3,7 +3,7 @@
   "version": "0.8.1",
   "description": "Codex-style right-click menus for the DeepSeek Harness Web UI: copy/cut/paste/select-all on text, copy path and reveal in the file manager for file chips, copy or open for links.",
   "license": "MIT",
-  "author": "cosmoszzc",
+  "author": "dreammaker2016",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -30,11 +30,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cosmoszzc/dsh-file-menu.git"
+    "url": "git+https://github.com/dreammaker2016/dsh-file-menu.git"
   },
-  "homepage": "https://github.com/cosmoszzc/dsh-file-menu#readme",
+  "homepage": "https://github.com/dreammaker2016/dsh-file-menu#readme",
   "bugs": {
-    "url": "https://github.com/cosmoszzc/dsh-file-menu/issues"
+    "url": "https://github.com/dreammaker2016/dsh-file-menu/issues"
   },
   "engines": {
     "node": ">=18"
