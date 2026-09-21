@@ -1,5 +1,6 @@
 # dsh-file-menu bundle patch: one host row serving /file-menu/*.
+# name 必须等于 npm 包名（作用域名是因为 npm 拒绝与既有 dsh-filemenu 过于相似的无作用域名）。
 # 客户端半端由 dsh-client-modules 扫描声明了 dsh.client 的宿主条目自动下发。
 - insert:
     - id: file-menu
-      name: dsh-file-menu
+      name: '@z1995418/dsh-file-menu'
