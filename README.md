@@ -36,8 +36,11 @@ The menu is built from the element under the cursor:
 ## Install
 
 ```sh
-dsh plugin --profile web add dsh-file-menu
+dsh plugin --profile web add github:dreammaker2016/dsh-file-menu
 ```
+
+Every [release](https://github.com/dreammaker2016/dsh-file-menu/releases) also carries a prebuilt tarball; install that
+with `dsh plugin --profile web add <tarball-url>` if you prefer to skip the source checkout.
 
 Use the profile you actually run (`web` for the Web client, your own profile name for DSH Desktop). Restart DSH after
 installing.

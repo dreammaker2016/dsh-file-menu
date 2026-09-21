@@ -34,8 +34,11 @@ DSH 的 Web 客户端本身没有任何 `contextmenu` 处理，在应用里点�
 ## 安装
 
 ```sh
-dsh plugin --profile web add dsh-file-menu
+dsh plugin --profile web add github:dreammaker2016/dsh-file-menu
 ```
+
+每个 [Release](https://github.com/dreammaker2016/dsh-file-menu/releases) 都附带预构建 tarball，
+不想走源码检出的话可以用 `dsh plugin --profile web add <tarball 地址>` 安装。
 
 profile 名写你实际在用的那个（Web 客户端是 `web`，DSH Desktop 用你自己的 profile 名）。装完**重启 DSH** 才会加载。
 
