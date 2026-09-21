@@ -24,8 +24,12 @@ DSH 的 Web 客户端本身没有任何 `contextmenu` 处理，在应用里点�
   不依赖渲染进程的剪贴板权限；宿主路由不可用时，客户端退回浏览器本地 `document.execCommand('copy')`。
 - **打开文件位置**：在系统支持"选中"的平台上会真正选中该文件——Windows 资源管理器 `/select`、macOS Finder `open -R`；
   Linux 的 `xdg-open` 没有选中语义，退而打开所在目录。宿主路由完全不可用时，客户端退回 DSH 自带的 `/open-in-app/open`（打开所在文件夹）。
-- 文件路径识别来源：元素的 `title` / `data-path` / `data-file-path` / `dataset.*path` / 选中文本本身；
-  只接受**绝对路径**（`C:\...`、`\\server\...`、`/...`）。
+- 文件路径识别来源：元素的 `title` / `data-path` / `data-file-path` / `dataset.*path`、**元素自身的文本**
+  （DSH 工具行的 fileLink 按钮没有任何路径属性，路径只在文本里）、或选中的绝对路径。
+  DSH 对**工作区内**的文件引用显示的是**相对路径**（`dsh-plugins/x/README.md`、`@docs/plan.md`），
+  因此相对路径会用**当前会话的工作区根**解析——客户端从 DSH 的 `sessions` 服务读取
+  （`list.getSnapshot()` → `byId[current].cwd`），`~/...` 由宿主半端展开。取不到工作区根时不猜，
+  直接不显示文件操作行。
 
 ## 安装
 
@@ -43,14 +47,17 @@ dsh plugin --profile web remove dsh-file-menu
 
 ## 限制
 
-- DSH 以纯文本渲染的路径不识别——只有把绝对路径写在 `title` / `data-path` 属性上的元素，或选中的路径字符串才行。
-- 只接受绝对路径，宿主路由会拒绝其它输入。
+- 出现在正文里的相对路径，只有**单个 token**（不含空白）、**含路径分隔符**且**末段带文件扩展名**时才会被识别。
+  带空格的路径、只有文件名（没有目录）、没有扩展名的目录会被跳过——这正是「复制/粘贴」这类正常文字不会长出文件操作行的原因。
+- 相对路径依赖当前会话的工作区根。如果读不到 DSH 的 `sessions` 服务，就不显示文件操作行，而不是瞎猜。
 - 两端版本各自独立：客户端半端（`lib/client.js`）跟随包版本，宿主半端版本从 `GET /file-menu/status` 读取。
 
 ## 原理
 
 - **宿主半端** `lib/index.js`：`webServer` 前缀路由 `/file-menu`，提供
-  `ping`、`status`、`hello`、`menu`、`diag`、`clipboard`、`reveal`、`open`，只接受绝对路径。
+  `ping`、`status`、`hello`、`menu`、`diag`、`clipboard`、`reveal`、`open`。
+  `reveal` / `open` 接收 `{ path, base }`：绝对路径直接用、`~/...` 展开到家目录、相对路径按 `base`
+  （会话工作区根）拼接，最后只对真实存在的路径动手。
 - **客户端半端** `lib/client.js`：捕获阶段监听 `contextmenu` + 纯 DOM 菜单（不依赖 React）；
   用 `pointerdown` + `elementFromPoint` 命中激活，避免上游 `stopPropagation` 把点击吞掉。
 - `cordis.patch.yml`：注册宿主半端的那一行。宿主条目声明了 `dsh.client`，客户端 bundle 由 DSH 自动下发。

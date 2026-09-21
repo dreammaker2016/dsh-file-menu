@@ -30,6 +30,18 @@
    `/file-menu/diag`，服务端 `GET /file-menu/status` 就能读到 —— 本插件能定位到具体行就是靠这个。
 8. 文件路径来自元素 `title` / `data-path` / `dataset.*path` / 选中文本；DSH 的"生成文件"芯片是
    `<button class="...producedChip" title="<绝对路径>">`，消息内联文件引用是 `<code><button class="...fileMention" title="<绝对路径>">`。
+9. **DSH 对工作区内的文件显示的是相对路径**（`PhysicaMedica_submission_check/03_.../报告.md`、`@PPT+演讲稿/01.pptx`），
+   而工具行的 `fileLink` 按钮是"三无"元素：**没有 title、没有 data-path**，路径只在按钮文本里。
+   只认绝对路径的版本会导致老会话正文里的文件右键只剩「复制此段文字」——这是实际报上来的 bug。
+   现在的做法：候选串不要求绝对，工作区根从客户端 `sessions` 服务取
+   （`ctx.get("sessions").list.getSnapshot()` → `current` → `byId[id].cwd`），客户端拼成绝对路径后发宿主
+   （这样宿主端即使没重启、还是旧代码也能正常工作），宿主端再按 `{ path, base }` 权威解析一次，`~` 也在这里展开。
+   ⚠️ 客户端 `apply(ctx)` 拿到的是**动态插件守卫门面**：`ctx.sessions` 这种直接取属性会被拦（未在 `inject` 声明），
+   但 `ctx.get("sessions")` 是**可选查找**，不声明也能读。所以故意**不**把 `sessions` 写进 `inject`——
+   写进去就会变成硬依赖，该服务缺失时整个插件被 park，右键菜单也跟着没了。
+10. **文本候选必须防误报。** 只有「不含空白 + 不含中文标点 + 末段带扩展名」的文本才当路径；
+   否则右键「复制/粘贴」这种带斜杠的普通词也会长出文件操作行。
+   属性来源（title/data-path）放宽一档：不要求扩展名，但仍要求不含空白。
 
 ## 原理与注意
 
@@ -42,3 +54,5 @@
    macOS `open -R` + `open`，Linux `xdg-open`（`xdg-open` 没有"选中"语义，退而打开所在目录）。
    只有 Windows 与 macOS 能真正"选中"文件。
 5. **剪贴板优先级**：Electron 主进程 `clipboard.writeText` → PowerShell `Set-Clipboard`（文本走 base64，避免编码与引号问题）→ 渲染进程 `document.execCommand('copy')`。
+6. **路径解析优先级**（客户端 `displayPathOf` / 宿主 `resolveTarget` 一致）：绝对路径 → `~`/`~/...` → 相对路径 + `base`（会话工作区根）；都不成立就返回空串，**客户端据此不显示文件操作行**，而不是弹一个必然失败的菜单项。
+   诊断通道：客户端加载时会 POST 一条 `workspace-base` 记录，`GET /file-menu/status` 就能看到工作区根取没取到。
