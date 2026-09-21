@@ -1,0 +1,5 @@
+# dsh-file-menu bundle patch: one host row serving /file-menu/*.
+# 客户端半端由 dsh-client-modules 扫描声明了 dsh.client 的宿主条目自动下发。
+- insert:
+    - id: file-menu
+      name: dsh-file-menu
