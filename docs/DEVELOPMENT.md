@@ -42,6 +42,24 @@
 10. **文本候选必须防误报。** 只有「不含空白 + 不含中文标点 + 末段带扩展名」的文本才当路径；
    否则右键「复制/粘贴」这种带斜杠的普通词也会长出文件操作行。
    属性来源（title/data-path）放宽一档：不要求扩展名，但仍要求不含空白。
+11. **Windows「打开文件位置」必须用 `windowsVerbatimArguments: true`（本插件最坑的一条）。**
+   Node 默认会给参数加引号并转义内层引号，`/select,"<path>"` 会被拼成 `"/select,\"<path>\""`，
+   **Explorer 的非标准命令行解析会忽略这个开关并退回默认文件夹**（实测症状：一律打开「文档」，
+   让人误以为是路径解析错了——而「复制路径」显示的是对的，正好能排除路径问题）。
+   含空格的路径即使把开关与路径拆成两个参数（`['/select,', path]`）也只打开目录、不选中文件**。
+   实测四种形式（脚本用 Shell.Application COM 读回资源管理器真实选中项，不靠肉眼）：
+
+   | 形式 | 无空格路径 | 含空格路径 |
+   |---|---|---|
+   | `['/select,"<path>"']`（默认选项） | ❌ 落到「文档」 | ❌ 落到「文档」 |
+   | `['/select,', path]`（默认选项） | ✅ 选中 | ❌ 只开目录 |
+   | `['/select,' + path]` + verbatim | ✅ 选中 | ✅ 选中 |
+   | `['/select,', path]` + verbatim | ✅ 选中 | ✅ 选中 |
+
+   顺带一个发现：DSH 自带的 `revealNativePath` 用 `explorer.exe ['/select,', <编码 file URL>]`，
+   在本机实测**同样落到错误目录**（file URL 形式无效）。所以这里没有复用 `sessionController.openWorkspacePath`，
+   而是自己走 verbatim 裸路径——比平台自带实现更可靠。
+   复现脚本：`%TEMP%\reveal-probe.cjs` + `%TEMP%\reveal-compare.ps1`。
 
 ## 原理与注意
 

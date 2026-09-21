@@ -1,6 +1,6 @@
 {
   "name": "dsh-file-menu",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Codex-style right-click menus for the DeepSeek Harness Web UI: copy/cut/paste/select-all on text, copy path and reveal in the file manager for file chips, copy or open for links.",
   "license": "MIT",
   "author": "cosmoszzc",
